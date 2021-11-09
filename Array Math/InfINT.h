@@ -44,15 +44,8 @@ public:
 
     void addition(int toAdd)
     {
-        int i = max;
-        while (toAdd > 0 && i-- > 0)
-        {
-            a[i] += toAdd % 10;
-            toAdd /= 10;
-            if (a[i] < 10) continue;
-            a[i] -= 10;
-            a[i - 1] += 1;
-        }
+        a[max - 1] += toAdd;
+        handleCarry(max - 1);
         updateSize();
     }
 

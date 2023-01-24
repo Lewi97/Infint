@@ -86,7 +86,7 @@ namespace infini
         {
             if (util::overflow_add(at(0), amount))
             {
-                add(1ull, 1);
+                add(Base{ 1 }, 1);
             }
 
             return *this;

@@ -1,11 +1,13 @@
 #include <iostream>
 
+#include <array>
+#include <string>
+#include <format>
 #include "InfINT.h"
+#include "Utility.h"
+#include "Radix.h"
 
 int main()
 {
-    InfINT arr(1, 1024);
-    arr.factor(100);
-    std::cout << arr.getString();
-    return 0;
+	return 0;
 }

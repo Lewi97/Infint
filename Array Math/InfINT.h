@@ -137,11 +137,17 @@ namespace infini
         { /* Multiplier cant be uint64_t cause it could overflow the calculation if multiplier was sufficiently high */
             auto carry = uint64_t{ 0 };
 
-            for (auto& num : _number)
+            for (auto idx{ 0ull }; idx < size(); idx++)
             {
+                auto& num = at(idx);
                 auto sum = static_cast<uint64_t>(num) * static_cast<uint64_t>(multiplier) + carry;
                 carry = (sum & (0xffffffffull << 32)) >> 32; /* Take high bits */
                 num = static_cast<Base>(sum); /* Take low bits */
+
+                if (idx == size() - 1 && carry != 0)
+                {
+                    resize_double();
+                }
             }
 
             return *this;

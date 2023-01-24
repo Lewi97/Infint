@@ -23,5 +23,14 @@
     <ClInclude Include="InfINT.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Utility.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Radix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Experiments.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

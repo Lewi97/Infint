@@ -16,7 +16,6 @@ namespace infini
     protected:
         friend auto to_string(const Infinint& infi) -> std::string;
 
-        inline static constexpr auto default_size = 2ull;
         std::vector<Base> _number;
 
         constexpr auto 
@@ -52,7 +51,7 @@ namespace infini
 
         constexpr explicit 
             Infinint(std::string_view repr)
-            : _number(default_size, 0)
+            : _number(2, 0)
         {}
 
         /*
@@ -103,7 +102,7 @@ namespace infini
 
             if (util::overflow_add(at(position), amount))
             {
-                add(Base{ 1 }, position + 1);
+                add(1ull, position + 1);
             }
 
             return *this;
@@ -130,21 +129,15 @@ namespace infini
         
         constexpr auto 
             at(size_t index) -> Base& { return _number.at(index); }
-
-        constexpr auto
-            at(size_t index) const -> const Base& { return _number.at(index); }
         
         constexpr auto 
             empty() const -> bool { return _number.empty(); }
         
-        constexpr auto
-            approx_digits(uint64_t size) -> uint64_t { return size * 10 + 1; }
-
         static constexpr auto 
             radix() -> uint64_t { return static_cast<uint64_t>(std::numeric_limits<Base>::max()) + 1; }
-
-        static constexpr auto
-            default_start_size() -> uint64_t { return default_size; }
+        
+        constexpr auto
+            approx_digits(uint64_t size) -> uint64_t { return size * 10 + 1; }
     };
     
     /*
@@ -153,9 +146,6 @@ namespace infini
     inline auto 
         to_string(const Infinint& infi) -> std::string
     {
-        if (infi.size() == infi.default_start_size() && infi.at(1) == 0)
-            return std::to_string(infi.at(0));
-
         auto string = std::string();
         /* Copy of internal buffer, not sure how to do this without modifying the internal buffer
         so we just have to deal with allocating on string conversions */

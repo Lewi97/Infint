@@ -102,7 +102,7 @@ namespace infini
 
             if (util::overflow_add(at(position), amount))
             {
-                add(1ull, position + 1);
+                add(Base{ 1 }, position + 1);
             }
 
             return *this;

@@ -116,19 +116,32 @@ namespace infini
             return *this;
         }
 
-        /* (TODO) Handle division */
         constexpr auto
             divide(Base divisor) -> Infinint&
         {
             constexpr auto pow32 = util::pow(2ull, 32);
-            auto j{ 0ull };
             auto remainder{ 0ull };
 
             for (auto iter = _number.rbegin(); iter != _number.rend(); iter++)
             {
-                j = pow32 * remainder + static_cast<uint64_t>(*iter);
-                *iter = static_cast<uint32_t>(j) / divisor;
-                remainder = j % divisor;
+                auto sum = pow32 * remainder + static_cast<uint64_t>(*iter);
+                *iter = static_cast<uint32_t>(sum) / divisor;
+                remainder = sum % divisor;
+            }
+
+            return *this;
+        }
+
+        constexpr auto
+            multiply(Base multiplier) -> Infinint&
+        { /* Multiplier cant be uint64_t cause it could overflow the calculation if multiplier was sufficiently high */
+            auto carry = uint64_t{ 0 };
+
+            for (auto& num : _number)
+            {
+                auto sum = static_cast<uint64_t>(num) * static_cast<uint64_t>(multiplier) + carry;
+                carry = (sum & (0xffffffffull << 32)) >> 32; /* Take high bits */
+                num = static_cast<Base>(sum); /* Take low bits */
             }
 
             return *this;

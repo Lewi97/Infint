@@ -40,19 +40,27 @@ namespace infini
             Infinint()
             : _number(2, 0)
         {}
-
-        /*
-        * start_size has to be greater than 0
-        */
-        constexpr explicit
-            Infinint(size_t start_size)
-            : _number(start_size == 0 ? 2 : start_size, 0)
-        {}
-
+                
         constexpr explicit 
             Infinint(std::string_view repr)
             : _number(2, 0)
         {}
+
+        constexpr explicit
+            Infinint(Base base)
+            : _number(2, 0)
+        {
+            at(0) = base;
+        }
+
+        constexpr explicit
+            Infinint(uint64_t n)
+            : _number(4, 0)
+        {
+            auto [hi, lo] = util::half(n);
+            at(0) = lo;
+            at(1) = hi;
+        }
 
         /*
         * Most significant byte first
@@ -110,9 +118,19 @@ namespace infini
 
         /* (TODO) Handle division */
         constexpr auto
-            divide(auto divisor) -> Infinint&
+            divide(Base divisor) -> Infinint&
         {
-            static_assert(false);
+            constexpr auto pow32 = util::pow(2ull, 32);
+            auto j{ 0ull };
+            auto remainder{ 0ull };
+
+            for (auto iter = _number.rbegin(); iter != _number.rend(); iter++)
+            {
+                j = pow32 * remainder + static_cast<uint64_t>(*iter);
+                *iter = static_cast<uint32_t>(j) / divisor;
+                remainder = j % divisor;
+            }
+
             return *this;
         }
 

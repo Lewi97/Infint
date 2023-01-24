@@ -89,4 +89,16 @@ namespace infini::util
 
 		to << *i << ']';
 	}
+
+	/*
+	* Get the high 32 and low 32 bits of a 64 bit unsigned integral.
+	* @returns pair{ hi bits, lo bits }
+	*/
+	constexpr inline auto
+		half(uint64_t num) -> std::pair<uint32_t, uint32_t>
+	{
+		auto lo = static_cast<uint32_t>(num);
+		auto hi = static_cast<uint32_t>(num >> 32);
+		return std::pair(hi, lo);
+	}
 }

@@ -73,6 +73,19 @@ namespace infini::util
 	}
 	
 	/*
+	* Converts ascii char to an integral specified by _Int.
+	* Will clamp n between 0 and 9 if n is too big.
+	*/
+	template<std::integral _Int>
+	constexpr inline auto
+		to_integral(char n) -> _Int
+	{
+		auto out = n - '0';
+
+		return out >= 0 && out <= 9 ? out : 0;
+	}
+
+	/*
 	* Writes the provided range to parameter to using the shift left stream operator.
 	* @param range: A range type.
 	* @param to: A type whom's left shift operator can be overloaded with the value type of param range.

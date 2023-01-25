@@ -5,7 +5,7 @@
 #include <ranges>
 #include <string>
 #include <assert.h>
-
+#include <charconv>
 
 namespace infini
 {
@@ -15,6 +15,7 @@ namespace infini
         using Base = uint32_t;
     protected:
         friend auto to_string(const Infinint& infi) -> std::string;
+        friend auto to_infinint(std::string_view view) -> Infinint;
 
         std::vector<Base> _number;
 
@@ -40,12 +41,7 @@ namespace infini
             Infinint()
             : _number(2, 0)
         {}
-                
-        constexpr explicit 
-            Infinint(std::string_view repr)
-            : _number(2, 0)
-        {}
-
+        
         constexpr explicit
             Infinint(Base base)
             : _number(2, 0)
@@ -64,8 +60,8 @@ namespace infini
 
         /*
         * Most significant byte first
-        * [0, 1] == 1
-        * [1, 0] == Radix
+        * [0, 1] == Radix
+        * [1, 0] == 1
         */
         constexpr explicit
             Infinint(std::vector<Base> data)
@@ -96,6 +92,17 @@ namespace infini
             {
                 add(Base{ 1 }, 1);
             }
+
+            return *this;
+        }
+
+        constexpr auto
+            add(uint64_t amount) -> Infinint&
+        {
+            auto [hi, lo] = util::half(amount);
+
+            add(lo);
+            add(hi, 1);
 
             return *this;
         }
@@ -141,7 +148,7 @@ namespace infini
             {
                 auto& num = at(idx);
                 auto sum = static_cast<uint64_t>(num) * static_cast<uint64_t>(multiplier) + carry;
-                carry = (sum & (0xffffffffull << 32)) >> 32; /* Take high bits */
+                carry = static_cast<Base>(sum >> 32); /* Take high bits */
                 num = static_cast<Base>(sum); /* Take low bits */
 
                 if (idx == size() - 1 && carry != 0)
@@ -220,11 +227,45 @@ namespace infini
 
         return string;
     }
+
+    /*
+    * Creates an infinint from a string view. 
+    * If a non digit character is found in the view the construction will stop.
+    */
+    inline auto
+        to_infinint(std::string_view view) -> Infinint
+    {
+        auto infinint = Infinint{};
+
+        /* pow64 = 18446744073709551616 -> 20 digits */
+        constexpr auto digits_in_pow64 = 20ull;
+        
+        auto chunk_size = view.size() <= digits_in_pow64 - 1/* -1 else we risk overflowing */ 
+            ? view.size() : digits_in_pow64 - 1;
+        
+        while (not view.empty())
+        {
+            auto from_chars = uint64_t{};
+
+            infinint.multiply(util::pow(10ull, chunk_size));
+            if (chunk_size > view.size())
+                chunk_size = view.size();
+
+            auto [_, err] = std::from_chars(view.data(), view.data() + chunk_size, from_chars);
+            if (err == std::errc::invalid_argument) break;
+
+            infinint.add(from_chars);
+
+            view.remove_prefix(chunk_size);
+        }
+
+        return infinint;
+    }
 }
 namespace infini::literals
 {
     auto operator"" _infinint(const char* string, size_t size) -> Infinint
     {
-        return Infinint(std::string_view{ string });
+        return to_infinint(std::string_view{ string });
     }
 }

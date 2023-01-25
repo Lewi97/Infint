@@ -10,6 +10,7 @@
 namespace infini
 {
     /* Forward decl */
+    class Infinint;
     inline auto to_infinint(std::string_view view, Infinint& other) -> void;
 
     class Infinint
@@ -51,7 +52,7 @@ namespace infini
             at(0) = base;
         }
 
-        constexpr explicit
+        explicit
             Infinint(std::string_view view)
         {
             to_infinint(view, *this);

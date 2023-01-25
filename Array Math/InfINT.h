@@ -140,11 +140,13 @@ namespace infini
         }
 
         constexpr auto
-            multiply(Base multiplier) -> Infinint&
+            multiply(Base multiplier, size_t position = 0) -> Infinint&
         { /* Multiplier cant be uint64_t cause it could overflow the calculation if multiplier was sufficiently high */
+            if (multiplier == 1) return *this;
+            
             auto carry = uint64_t{ 0 };
 
-            for (auto idx{ 0ull }; idx < size(); idx++)
+            for (auto idx{ position }; idx < size(); idx++)
             {
                 auto& num = at(idx);
                 auto sum = static_cast<uint64_t>(num) * static_cast<uint64_t>(multiplier) + carry;
@@ -239,17 +241,33 @@ namespace infini
 
         /* pow64 = 18446744073709551616 -> 20 digits */
         constexpr auto digits_in_pow64 = 20ull;
+        /* pow32 = 4294967295 -> 10 digits */
+        constexpr auto digits_in_pow32 = 10ull;
         
-        auto chunk_size = view.size() <= digits_in_pow64 - 1/* -1 else we risk overflowing */ 
-            ? view.size() : digits_in_pow64 - 1;
-        
+        auto chunk_size = view.size() <= digits_in_pow64 - 2 /* -2 else we risk overflowing */ 
+            ? view.size() : digits_in_pow64 - 2;
+
         while (not view.empty())
         {
             auto from_chars = uint64_t{};
 
-            infinint.multiply(util::pow(10ull, chunk_size));
-            if (chunk_size > view.size())
-                chunk_size = view.size();
+            /*
+            * We cant multiply directly by chunk_size due to uint64_t > uint32_t so we have to half chunk_size 
+            * This could be solved by multiplying by another Infinint but that would be a needless heap allocation
+            */
+            if (chunk_size < digits_in_pow32)
+            {
+                infinint.multiply(util::pow(10u, chunk_size));
+            }
+            else
+            {
+                auto half_chunk_size = chunk_size / 2;
+
+                /* if chunk_size is odd add 1, integer division floors the result */
+                infinint.multiply(util::pow(10ul, half_chunk_size + (chunk_size & 1)));
+                infinint.multiply(util::pow(10ul, half_chunk_size));
+            }
+
 
             auto [_, err] = std::from_chars(view.data(), view.data() + chunk_size, from_chars);
             if (err == std::errc::invalid_argument) break;
@@ -257,6 +275,9 @@ namespace infini
             infinint.add(from_chars);
 
             view.remove_prefix(chunk_size);
+
+            if (chunk_size > view.size())
+                chunk_size = view.size();
         }
 
         return infinint;

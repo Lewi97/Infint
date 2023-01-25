@@ -9,13 +9,15 @@
 
 namespace infini
 {
+    /* Forward decl */
+    inline auto to_infinint(std::string_view view, Infinint& other) -> void;
+
     class Infinint
     {
     public:
         using Base = uint32_t;
     protected:
         friend auto to_string(const Infinint& infi) -> std::string;
-        friend auto to_infinint(std::string_view view) -> Infinint;
 
         std::vector<Base> _number;
 
@@ -47,6 +49,12 @@ namespace infini
             : _number(2, 0)
         {
             at(0) = base;
+        }
+
+        constexpr explicit
+            Infinint(std::string_view view)
+        {
+            to_infinint(view, *this);
         }
 
         constexpr explicit
@@ -281,6 +289,12 @@ namespace infini
         }
 
         return infinint;
+    }
+
+    inline auto
+        to_infinint(std::string_view view, Infinint& other) -> void
+    {
+        other = to_infinint(view);
     }
 }
 namespace infini::literals
